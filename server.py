@@ -5,7 +5,7 @@ Clase (y programa principal) para un servidor de eco en UDP simple
 """
 
 import socketserver
-
+import sys
 
 class EchoHandler(socketserver.DatagramRequestHandler):
     """
@@ -18,6 +18,7 @@ class EchoHandler(socketserver.DatagramRequestHandler):
             # Leyendo línea a línea lo que nos envía el cliente
             line = self.rfile.read()
             
+            # Si no hay más líneas salimos del bucle infinito
             if not line:
                 break
            
@@ -25,10 +26,8 @@ class EchoHandler(socketserver.DatagramRequestHandler):
             print("El cliente nos manda " + line.decode('utf-8'))
                     
             mensaje_cliente = line.decode("utf-8").split(" ")
-            Ip = self.client_address[0]
             metodo = mensaje_cliente[0]
-            direccion = mensaje_cliente[1]
-
+            
             if metodo == "INVITE":
                 respuesta_serv = ("SIP/2.0 100 Trying\r\n\r\n" \
                                     + "SIP/2.0 180 Ringing\r\n\r\n" \
@@ -38,17 +37,22 @@ class EchoHandler(socketserver.DatagramRequestHandler):
             
             elif metodo == "ACK":
                print("LLEGA ACK")
-            
-            #    print("Metodo = " + metodo + " IP = " + Ip + " Direccion = " \
-            #    + direccion)
-                
-            # Si no hay más líneas salimos del bucle infinito
-            
 
+            elif metodo == "BYE":            
+                respuesta_serv = ("SIP/2.0 200 OK\r\n\r\n")
+            
+                self.wfile.write(bytes(respuesta_serv, "utf-8"))
+            
 if __name__ == "__main__":
+    try:
+        Ip_serv = sys.argv[1]
+        puerto_serv = int(sys.argv[2])
+        fich_audio = sys.argv[3]
+    except :
+        sys.exit("Usage: python3 server.py IP port audio_file")
     # Creamos servidor de eco y escuchamos
-    serv = socketserver.UDPServer(('', 5555), EchoHandler)
-    print("Lanzando servidor UDP de eco...")
+    serv = socketserver.UDPServer(('', puerto_serv), EchoHandler)
+    print("Listening...")    
     try:
         serv.serve_forever()
     except KeyboardInterrupt:
