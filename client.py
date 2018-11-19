@@ -17,7 +17,7 @@ try:
     IP_RECEPTOR = IP_Y_PORT.split(":")[0] # 127.0.0.1
     PORT = int(sys.argv[2].split(":")[-1])
     
-except IndexError:
+except :
     sys.exit("Usage: python3 client.py method receiver@IP:SIPport")
 
 # Creamos el socket, lo configuramos y lo atamos a un servidor/puerto
